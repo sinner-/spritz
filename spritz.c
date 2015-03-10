@@ -1,13 +1,6 @@
-#include <stdlib.h>
 #include <string.h>
 
-#define N 256
-#define MAX_KEY_LENGTH 245
-
-typedef unsigned char byte;
-byte i, j, k, z, a, w;
-
-byte S[N];
+#include "spritz.h"
 
 byte low(byte b) {
   return b & 0x0F;
@@ -135,10 +128,10 @@ void absorbByte(byte b) {
   absorbNibble(high(b));
 }
 
-void absorb(byte *I, size_t ilength) {
+void absorb(byte *I, size_t iLength) {
   size_t v;
 
-  for(v = 0; v < ilength; v++) {
+  for(v = 0; v < iLength; v++) {
     absorbByte(I[v]);
   }
 }
@@ -153,69 +146,4 @@ void initialiseState() {
   for(v = 0; v < N; v++) {
     S[v] = v;
   }
-}
-
-int main(int argc, char* argv[]) {
-
-  byte key[MAX_KEY_LENGTH] = {0};
-  size_t keyLength;
-  FILE *keyFile = stdin;
-  keyFile = fopen("/home/sina/spritz/spritz.key","rb");
-  fgets(key, MAX_KEY_LENGTH, keyFile);
-  keyLength = strlen(key);
-  fclose(keyFile);
-
-  //keySetup
-  initialiseState();
-  absorb(key, keyLength);
-
-  if(a != 0) {
-    shuffle();
-  }
-
-  int inputChar;
-
-  if(strcmp(argv[1], "encrypt") == 0) {
-
-    FILE *in = stdin;
-    FILE *out = stdout;
-    in = fopen("/home/sina/spritz/testmsg", "rb");
-    out = fopen("/home/sina/spritz/encrypted","wb");
-
-    inputChar = fgetc(in);
-    while(inputChar != EOF) {
-
-      byte r;
-
-      r = (byte)inputChar + drip();
-
-      fputc(r, out);
-      inputChar = fgetc(in);
-    }
-
-    fclose(in);
-    fclose(out);
-
-  } else {
-
-    FILE *encrypted = stdin;
-    FILE *decrypted = stdout;
-    encrypted = fopen("/home/sina/spritz/encrypted","rb");
-    decrypted = fopen("/home/sina/spritz/decrypted","wb");
-
-    inputChar = fgetc(encrypted);
-    while(inputChar != EOF) {
-      byte r;
-
-      r = (byte)inputChar - drip();
-
-      fputc(r, decrypted);
-      inputChar = fgetc(encrypted);
-    }
-
-    fclose(encrypted);
-    fclose(decrypted);
-  }
-
-  return 0;
 }
