@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "spritz.h"
 
 byte low(byte b)
@@ -63,7 +61,7 @@ byte gcd(byte u, byte v)
 
 byte output()
 {
-  z = S[j + S[i + S[z + k]]];
+  z = S[(byte)(j + S[(byte)(i + S[(byte)(z + k)])])];
 
   return z;
 }
