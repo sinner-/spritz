@@ -3,3 +3,6 @@ test.msg
 test.encrypted
 test.decrypted
 spritz
+Makefile
+*.o
+*.d
