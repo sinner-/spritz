@@ -6,3 +6,4 @@ spritz
 Makefile
 *.o
 *.d
+*.class
