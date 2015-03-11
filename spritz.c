@@ -2,91 +2,109 @@
 
 #include "spritz.h"
 
-byte low(byte b) {
+byte low(byte b)
+{
   return b & 0x0F;
 }
 
-byte high(byte b) {
+byte high(byte b)
+{
   return (b & 0xF0) >> 4;
 }
 
-void swap(byte* a, byte* b) {
+void swap(byte* a, byte* b)
+{
   byte tmp = *a;
   *a = *b;
   *b = tmp;
 }
 
-byte gcd(byte u, byte v) {
-  if(u == v) {
+byte gcd(byte u, byte v)
+{
+  if(u == v)
+  {
     return u;
   }
 
-  if(u == 0) {
+  if(u == 0)
+  {
     return v;
   }
 
-  if(v == 0) {
+  if(v == 0)
+  {
     return u;
   }
 
-  if(~u & 1) {
-    if (v & 1) {
-      return(gcd(u >> 1, v));
+  if(~u & 1)
+  {
+    if (v & 1)
+    {
+      return gcd(u >> 1, v);
     }
-    else {
+    else
+    {
       return gcd(u >> 1, v >> 1) << 1;
     }
   }
 
-  if(~v & 1) {
+  if(~v & 1)
+  {
     return gcd(u, v >> 1);
   }
 
-  if(u > v) {
+  if(u > v)
+  {
     return gcd((u - v) >> 1, v);
   }
 
   return gcd((v - u) >> 1, u);
 }
 
-byte output() {
-  byte z;
-
+byte output()
+{
   z = S[j + S[i + S[z + k]]];
 
   return z;
 }
 
-void update() {
+void update()
+{
   i = i + w;
-  j = k + S[j + S[i]];
+  j = k + S[(byte)(j + S[i])];
   k = i + k + S[j];
   swap(&S[i],&S[j]);
 }
 
-void crush() {
+void crush()
+{
   size_t v;
 
-  for(v = 0; v < (N/2); v++) {
-    if(S[v] > S[N - 1 - v]) {
+  for(v = 0; v < (N/2); v++)
+  {
+    if(S[v] > S[N - 1 - v])
+    {
       swap(&S[v],&S[N - 1 - v]);
     }
   }
 }
 
-void whip(size_t r) {
+void whip(size_t r)
+{
   size_t v;
 
   for(v = 0; v < r; v++) {
     update();
   }
 
-  do {
+  do
+  {
     w = w + 1;
   } while(gcd(w,(byte)N) != (byte)1);
 }
 
-void shuffle() {
+void shuffle()
+{
   whip(N * 2);
   crush();
   whip(N * 2);
@@ -95,8 +113,10 @@ void shuffle() {
   a = 0;
 }
 
-byte drip() {
-  if(a != 0) {
+byte drip()
+{
+  if(a != 0)
+  {
     shuffle();
   }
 
@@ -105,16 +125,20 @@ byte drip() {
   return output();
 }
 
-void absorbStop() {
-  if(a == (N/2)) {
+void absorbStop()
+{
+  if(a == (N/2))
+  {
     shuffle();
   }
 
   a = a + 1;
 }
 
-void absorbNibble(byte x) {
-  if(a == (N/2)) {
+void absorbNibble(byte x)
+{
+  if(a == (N/2))
+  {
     shuffle();
   }
 
@@ -123,20 +147,24 @@ void absorbNibble(byte x) {
   a = a + 1;
 }
 
-void absorbByte(byte b) {
+void absorbByte(byte b)
+{
   absorbNibble(low(b));
   absorbNibble(high(b));
 }
 
-void absorb(byte *I, size_t iLength) {
+void absorb(byte *I, size_t iLength)
+{
   size_t v;
 
-  for(v = 0; v < iLength; v++) {
+  for(v = 0; v < iLength; v++)
+  {
     absorbByte(I[v]);
   }
 }
 
-void initialiseState() {
+void initialiseState()
+{
   i = j = k = z = a = 0;
 
   w = 1;
