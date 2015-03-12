@@ -253,7 +253,7 @@ public class Spritz {
 
       c = in.read();
 
-      while(in.available() > 0) {
+      while(c != -1) {
         byte r=0;
   
         if(program_action == ProgramMode.ENCRYPT) {
@@ -262,10 +262,13 @@ public class Spritz {
           r = (byte)(c - (spritz.drip() & 0xff));
         }
   
-        out.write(r);
+        out.write(r & 0xff);
         c = in.read();
   
       }
+
+      in.close();
+      out.close();
     } catch(Exception ex) {
       ex.printStackTrace(System.out);
       System.exit(0);
