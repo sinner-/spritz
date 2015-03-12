@@ -10,6 +10,12 @@ SPRITZ_KEY=pohPa6GeiJoThe7Zaecah8rohhohheiphai8Jie7FooGiephoch3cayei5eeVo6ohka1j
 PLAINTEXT_SUM=`sha1sum test.msg | awk '{print $1}'`
 DECRYPTED_SUM=`sha1sum test.decrypted | awk '{print $1}'`
 
+if [ -z $DECRYPTED_SUM ]; then
+  echo "decryption failed. exiting."
+  exit -1
+fi
+
+
 if [ $PLAINTEXT_SUM == $DECRYPTED_SUM ]; then
   echo "self test passed."
 else
@@ -24,6 +30,12 @@ rm test.decrypted
 ./spritz decrypt $SPRITZ_KEY test.encrypted test.decrypted
 
 DECRYPTED_SUM=`sha1sum test.decrypted | awk '{print $1}'`
+
+if [ -z $DECRYPTED_SUM ]; then
+  echo "decryption failed. exiting."
+  exit -1
+fi
+
 
 if [ $PLAINTEXT_SUM == $DECRYPTED_SUM ]; then
   echo "reference test passed."
