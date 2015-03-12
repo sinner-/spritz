@@ -8,3 +8,4 @@ Makefile
 *.d
 *.class
 *.swp
+tests/spritzsaber
