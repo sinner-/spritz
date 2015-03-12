@@ -33,8 +33,8 @@ public class Spritz {
     a = 0;
     w = 0;
   
-    for(byte v=0; v < SPRITZ_N; v++) {
-      S[v & 0xff] = v;
+    for(int v=0; v < SPRITZ_N; v++) {
+      S[v] = (byte)v;
     }
     
   }
@@ -54,21 +54,21 @@ public class Spritz {
   }
 
   private byte gcd(byte u, byte v) {
-    if (u == v) {
+    if ((u & 0xff) == (v & 0xff)) {
       return u;
     }
  
-    if (u == 0) {
+    if ((u & 0xff) == 0) {
       return v;
     }
 
-    if (v == 0) {
+    if ((v & 0xff) == 0) {
         return u;
     }
  
-    if ((~u & 1) == 0) { 
+    if ((~(u & 0xff) & 1) == 0) { 
 
-      if ((v & 1) == 0) {
+      if (((v & 0xff) & 1) == 0) {
         return gcd((byte)(u >>> 1), v);
       }
       else {
@@ -77,11 +77,11 @@ public class Spritz {
 
     }
 
-    if ((~v & 1) == 0) {
+    if ((~(v & 0xff) & 1) == 0) {
         return gcd(u, (byte)(v >>> 1));
     }
 
-    if (u > v) {
+    if ((u & 0xff) > (v & 0xff)) {
         return gcd((byte)((u - v) >>> 1), v);
     }
 
@@ -89,9 +89,9 @@ public class Spritz {
   }
 
   private void update() {
-    i = (byte) (i + w);
-    j = (byte) (k + S[(byte) (j + S[i] & 0xff)]);
-    k = (byte) (i + k + S[j & 0xff]);
+    i = (byte) ((i & 0xff) + (w & 0xff));
+    j = (byte) ((k & 0xff) + (S[((byte)((j & 0xff) + (S[(i & 0xff)] & 0xff))) & 0xff] & 0xff));
+    k = (byte) ((i & 0xff) + (k & 0xff) + (S[j & 0xff] & 0xff));
     swap(S[i & 0xff],S[j & 0xff]);
   }
 
@@ -101,15 +101,15 @@ public class Spritz {
     }
 
     do {
-      w = (byte) (w + 1);
+      w = (byte) ((w & 0xff) + 1);
     } while(gcd(w, (byte)SPRITZ_N) != (byte)1);
 
   }
 
   private void crush() {
     for(int v=0; v < (SPRITZ_N / 2); v++) {
-      if(S[v & 0xff] > S[(byte)(SPRITZ_N - 1 - v) & 0xff]) {
-        swap(S[v & 0xff],S[(byte)(SPRITZ_N - 1 - v) & 0xff]);
+      if(S[v & 0xff] > S[(SPRITZ_N - 1 - v) & 0xff]) {
+        swap(S[v & 0xff],S[(SPRITZ_N - 1 - v) & 0xff]);
       }
     }
   }
@@ -124,13 +124,13 @@ public class Spritz {
   }
 
   private void absorb_nibble(byte x) {
-    if(a == (SPRITZ_N/2)) {
+    if( (a & 0xff) == (SPRITZ_N/2)) {
       shuffle();
     }
 
-    swap(S[a & 0xff],S[(byte)(SPRITZ_N/2 + x) & 0xff]);
+    swap(S[a & 0xff],S[SPRITZ_N/2 + (x & 0xff)]);
     
-    a = (byte) (a + 1);
+    a = (byte) ((a & 0xff) + 1);
   }
 
   private void absorb_byte(byte b) {
@@ -139,27 +139,27 @@ public class Spritz {
   }
 
   private void absorb(byte[] I) {
-    for(byte v=0; v < I.length; v++) {
+    for(int v=0; v < I.length; v++) {
       absorb_byte(I[v]);
     }
   }
  
   private void absorb_stop() {
-    if( a == SPRITZ_N/2) {
+    if( (a & 0xff) == SPRITZ_N/2) {
       shuffle();
     }
 
-    a = (byte) (a + 1);
+    a = (byte) ((a & 0xff) + 1);
   }
 
   private byte drip() {
-    if(a != 0) {
+    if((a & 0xff) != 0) {
       shuffle();
     }
 
     update();
 
-    z = S[(byte)(j + S[(byte)(i + S[(byte)(z + k) & 0xff]) & 0xff]) & 0xff];
+    z = S[((byte)((j & 0xff) + (S[((byte)((i & 0xff) + (S[((byte)((z & 0xff) + (k & 0xff)) & 0xff)] & 0xff))) & 0xff] & 0xff)) & 0xff)];
 
     return z;
   }
@@ -203,16 +203,16 @@ public class Spritz {
 
     key = args[1].getBytes();
 
-    if(args.length >= 4) {
+    if(args.length >= 3) {
       try {
         in = new FileInputStream(args[2]);
       } catch(Exception ex) {
-        System.out.println("Input file " + args[3] + " not found.");
+        System.out.println("Input file " + args[2] + " not found.");
         System.exit(0);
       }
     }
 
-    if(args.length >= 5) {
+    if(args.length >= 4) {
       try {
         out = new FileOutputStream(args[3]);
       } catch(Exception ex) {
@@ -238,7 +238,7 @@ public class Spritz {
         ex.printStackTrace(System.out);
         System.exit(0);
       }
-      if(r != 10) {
+      if(r != IV_SIZE) {
         System.out.println("Could not read initialisation vector.");
         System.exit(0);
       }
@@ -250,30 +250,25 @@ public class Spritz {
     spritz.absorb(iv);
 
     try {
+
       c = in.read();
+
+      while(in.available() > 0) {
+        byte r=0;
+  
+        if(program_action == ProgramMode.ENCRYPT) {
+          r = (byte)(c + (spritz.drip() & 0xff));
+        } else if (program_action == ProgramMode.DECRYPT) {
+          r = (byte)(c - (spritz.drip() & 0xff));
+        }
+  
+        out.write(r);
+        c = in.read();
+  
+      }
     } catch(Exception ex) {
       ex.printStackTrace(System.out);
       System.exit(0);
-    }
-    while(c != -1) {
-      byte r=0;
-
-      if(program_action == ProgramMode.ENCRYPT) {
-        r = (byte)(c + spritz.drip());
-      } else if (program_action == ProgramMode.DECRYPT) {
-        r = (byte)(c - spritz.drip());
-      }
-
-      try {
-
-        out.write(r);
-        c = in.read();
-
-      } catch(Exception ex) {
-        ex.printStackTrace(System.out);
-      }
-
-
     }
 
     System.exit(0);
