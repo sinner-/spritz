@@ -31,7 +31,7 @@ public class Spritz {
     k = 0;
     z = 0;
     a = 0;
-    w = 0;
+    w = 1;
   
     for(int v=0; v < SPRITZ_N; v++) {
       S[v] = (byte)v;
