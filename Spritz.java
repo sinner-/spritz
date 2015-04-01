@@ -53,39 +53,31 @@ public class Spritz {
     b = tmp;
   }
 
-  private byte gcd(byte u, byte v) {
-    if ((u & 0xff) == (v & 0xff)) {
-      return u;
-    }
- 
-    if ((u & 0xff) == 0) {
-      return v;
+  public static final int gcd(int x1,int x2) {
+    //From http://www.java2s.com/Tutorial/Java/0120__Development/GreatestCommonDivisorGCDofpositiveintegernumbers.htm
+    if(x1<0 || x2<0) {
+      throw new IllegalArgumentException("Cannot compute the GCD if one integer is negative.");
     }
 
-    if ((v & 0xff) == 0) {
-        return u;
-    }
- 
-    if ((~(u & 0xff) & 1) == 0) { 
+    int a1,b1,g1,z1;
 
-      if (((v & 0xff) & 1) == 0) {
-        return gcd((byte)(u >>> 1), v);
-      }
-      else {
-        return (byte)(gcd((byte)(u >>> 1),(byte)(v >>> 1)) << 1);
-      }
-
+    if(x1>x2) {
+      a1 = x1;
+      b1 = x2;
+    } else {
+      a1 = x2;
+      b1 = x1;
     }
 
-    if ((~(v & 0xff) & 1) == 0) {
-        return gcd(u, (byte)(v >>> 1));
-    }
+    if(b1==0) return 0;
 
-    if ((u & 0xff) > (v & 0xff)) {
-        return gcd((byte)((u - v) >>> 1), v);
+    g1 = b1;
+    while (g1!=0) {
+      z1= a1%g1;
+      a1 = g1;
+      g1 = z1;
     }
-
-    return gcd((byte)((v - u) >>> 1), u);
+    return a1;
   }
 
   private void update() {
@@ -102,7 +94,7 @@ public class Spritz {
 
     do {
       w = (byte) ((w & 0xff) + 1);
-    } while(gcd(w, (byte)SPRITZ_N) != (byte)1);
+    } while(gcd(w & 0xff, SPRITZ_N) != 1);
 
   }
 
