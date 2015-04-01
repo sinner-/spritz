@@ -8,14 +8,14 @@ public class Spritz {
 
   private static final int SPRITZ_N=256;
 
-  private byte i;
-  private byte j;
-  private byte k;
-  private byte z;
-  private byte a;
-  private byte w;
+  private int i;
+  private int j;
+  private int k;
+  private int z;
+  private int a;
+  private int w;
 
-  private byte[] S = new byte[SPRITZ_N];
+  private int[] S = new int[SPRITZ_N];
 
   private static enum ProgramMode {
     ENCRYPT,
@@ -34,21 +34,21 @@ public class Spritz {
     w = 1;
   
     for(int v=0; v < SPRITZ_N; v++) {
-      S[v] = (byte)v;
+      S[v] = v;
     }
     
   }
 
-  private byte low(byte b) {
-    return (byte) (b & 0x0F);
+  private int low(byte b) {
+    return (b & 0x0F);
   }
 
-  private byte high(byte b) {
-    return (byte) ((b & 0xF0) >>> 4);
+  private int high(byte b) {
+    return ((b & 0xFF) >>> 4);
   }
 
   private void swap(int a, int b) {
-    byte tmp = S[a];
+    int tmp = S[a];
     S[a] = S[b];
     S[b] = tmp;
   }
@@ -81,10 +81,10 @@ public class Spritz {
   }
 
   private void update() {
-    i = (byte) ((i & 0xff) + (w & 0xff));
-    j = (byte) ((k & 0xff) + (S[((byte)((j & 0xff) + (S[(i & 0xff)] & 0xff))) & 0xff] & 0xff));
-    k = (byte) ((i & 0xff) + (k & 0xff) + (S[j & 0xff] & 0xff));
-    swap(i & 0xff,j & 0xff);
+    i = ((byte) (i + w)) & 0xff;
+    j = ((byte) (((byte) (k + S[(byte)(j + S[i]) & 0xff]) & 0xff))) & 0xff;
+    k = ((byte) (i + k + S[j])) & 0xff;
+    swap(i, j);
   }
 
   private void whip(int r) {
@@ -93,15 +93,15 @@ public class Spritz {
     }
 
     do {
-      w = (byte) ((w & 0xff) + 1);
-    } while(gcd(w & 0xff, SPRITZ_N) != 1);
+      w = ((byte) (w + 1)) & 0xff;
+    } while(gcd(w, SPRITZ_N) != 1);
 
   }
 
   private void crush() {
     for(int v=0; v < (SPRITZ_N / 2); v++) {
-      if(S[v & 0xff] > S[(SPRITZ_N - 1 - v) & 0xff]) {
-        swap(v & 0xff,SPRITZ_N - 1 - v);
+      if((S[v]) > S[SPRITZ_N - 1 - v]) {
+        swap(v, SPRITZ_N - 1 - v);
       }
     }
   }
@@ -115,14 +115,14 @@ public class Spritz {
     a = 0;
   }
 
-  private void absorb_nibble(byte x) {
-    if( (a & 0xff) == (SPRITZ_N/2)) {
+  private void absorb_nibble(int x) {
+    if(a == (SPRITZ_N/2)) {
       shuffle();
     }
 
-    swap(a & 0xff,(SPRITZ_N/2) + (x & 0xff));
+    swap(a, (byte) ((SPRITZ_N/2) + x) & 0xff);
     
-    a = (byte) ((a & 0xff) + 1);
+    a = ((byte) (a + 1)) & 0xff;
   }
 
   private void absorb_byte(byte b) {
@@ -137,23 +137,23 @@ public class Spritz {
   }
  
   private void absorb_stop() {
-    if( (a & 0xff) == SPRITZ_N/2) {
+    if(a == SPRITZ_N/2) {
       shuffle();
     }
 
-    a = (byte) ((a & 0xff) + 1);
+    a = ((byte) (a + 1)) & 0xff;
   }
 
   private byte drip() {
-    if((a & 0xff) != 0) {
+    if(a != 0) {
       shuffle();
     }
 
     update();
 
-    z = S[((byte)((j & 0xff) + (S[((byte)((i & 0xff) + (S[((byte)((z & 0xff) + (k & 0xff)) & 0xff)] & 0xff))) & 0xff] & 0xff)) & 0xff)];
+    z = S[(byte)(j + S[(byte)(i + S[(byte)(z + k) & 0xff]) & 0xff]) & 0xff];
 
-    return z;
+    return (byte) z;
   }
 
   public static void print_usage() {
@@ -254,7 +254,7 @@ public class Spritz {
           r = (byte)(c - (spritz.drip() & 0xff));
         }
   
-        out.write(r & 0xff);
+        out.write(r);
         c = in.read();
   
       }
