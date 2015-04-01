@@ -39,18 +39,18 @@ public class Spritz {
     
   }
 
-  private byte high(byte b) {
+  private byte low(byte b) {
     return (byte) (b & 0x0F);
   }
 
-  private byte low(byte b) {
+  private byte high(byte b) {
     return (byte) ((b & 0xF0) >>> 4);
   }
 
-  private void swap(byte a, byte b) {
-    byte tmp = a;
-    a = b;
-    b = tmp;
+  private void swap(int a, int b) {
+    byte tmp = S[a];
+    S[a] = S[b];
+    S[b] = tmp;
   }
 
   public static final int gcd(int x1,int x2) {
@@ -84,7 +84,7 @@ public class Spritz {
     i = (byte) ((i & 0xff) + (w & 0xff));
     j = (byte) ((k & 0xff) + (S[((byte)((j & 0xff) + (S[(i & 0xff)] & 0xff))) & 0xff] & 0xff));
     k = (byte) ((i & 0xff) + (k & 0xff) + (S[j & 0xff] & 0xff));
-    swap(S[i & 0xff],S[j & 0xff]);
+    swap(i & 0xff,j & 0xff);
   }
 
   private void whip(int r) {
@@ -101,7 +101,7 @@ public class Spritz {
   private void crush() {
     for(int v=0; v < (SPRITZ_N / 2); v++) {
       if(S[v & 0xff] > S[(SPRITZ_N - 1 - v) & 0xff]) {
-        swap(S[v & 0xff],S[(SPRITZ_N - 1 - v) & 0xff]);
+        swap(v & 0xff,SPRITZ_N - 1 - v);
       }
     }
   }
@@ -120,7 +120,7 @@ public class Spritz {
       shuffle();
     }
 
-    swap(S[a & 0xff],S[SPRITZ_N/2 + (x & 0xff)]);
+    swap(a & 0xff,(SPRITZ_N/2) + (x & 0xff));
     
     a = (byte) ((a & 0xff) + 1);
   }
