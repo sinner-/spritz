@@ -56,3 +56,21 @@
     (equalp
      #(#x1a #xfa #x8b #x5e #xe3 #x37 #xdb #xc7)
      (squeeze spritz 8)))))
+
+(def-test hash-test1 ()
+  (is
+   (equalp
+    #(#x02 #x8f #xa2 #xb4 #x8b #x93 #x4a #x18)
+    (subseq (hash "ABC" :size 32) 0 8))))
+
+(def-test hash-test2 ()
+  (is
+   (equalp
+    #(#xac #xbb #xa0 #x81 #x3f #x30 #x0d #x3a)
+    (subseq (hash "spam" :size 32) 0 8))))
+
+(def-test hash-test3 ()
+  (is
+   (equalp
+    #(#xff #x8c #xf2 #x68 #x09 #x4c #x87 #xb9)
+    (subseq (hash "arcfour" :size 32) 0 8))))

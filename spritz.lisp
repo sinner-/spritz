@@ -23,7 +23,8 @@
   (:export
    #:make-state
    #:absorb
-   #:squeeze))
+   #:squeeze
+   #:hash))
 
 (in-package #:spritz)
 
@@ -123,13 +124,18 @@
   (absorb-nibble spritz (high byte)))
 
 (defun absorb (spritz data)
-  (loop :for byte :across data
-        :do (absorb-byte spritz (char-code byte))))
+  (etypecase data
+    (list
+       (loop :for byte :in data
+             :do (absorb-byte spritz byte)))
+    (vector
+       (loop :for byte :across data
+             :do (absorb-byte spritz (char-code byte))))))
 
 (defun absorb-stop (spritz)
   (with-slots (N a)
       spritz
-    (if (= a (/ N 2))
+    (when (= a (/ N 2))
         (shuffle spritz))
     (incf a)))
 
@@ -141,3 +147,14 @@
    (let ((p (make-array len :element-type '(unsigned-byte 8))))
      (dotimes (v len p)
        (setf (elt p v) (drip spritz))))))
+
+(defun hash (data &key (size 20))
+  (let ((spritz (make-state)))
+    (absorb spritz data)
+    (absorb-stop spritz)
+    (absorb
+     spritz
+     (loop :for x = size :then (ash x -8)
+           :while (> x 0)
+           :collect (logand #xff x)))
+    (squeeze spritz size)))
